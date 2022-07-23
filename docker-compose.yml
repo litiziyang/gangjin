@@ -1,0 +1,128 @@
+version: "3.8"
+
+services:
+  pgsql:
+    image: 'postgres:13'
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    environment:
+      PGPASSWORD: '${DB_PASSWORD:-secret}'
+      POSTGRES_DB: '${DB_DATABASE}'
+      POSTGRES_USER: '${DB_USERNAME}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+    volumes:
+      - 'gangjin-pgsql:/var/lib/postgresql/data'
+    networks:
+      - gangjin
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "${DB_DATABASE}", "-U", "${DB_USERNAME}" ]
+      retries: 3
+      timeout: 5s
+  elasticsearch:
+    image: 'elasticsearch:7.17.2'
+    restart: always
+    volumes:
+      - 'gangjin-elasticsearch:/usr/share/elasticsearch/data'
+      - './elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml'
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      discovery.type: single-node
+      http.cors.enabled: true
+      http.cors.allow-origin: "*"
+    networks:
+      - gangjin
+  kibana:
+    image: 'kibana:7.17.2'
+    restart: always
+    ports:
+      - '${KIBANA_PORT:-5601}:5601'
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    environment:
+      ELASTICSEARCH_HOSTS: 'http://elasticsearch:9200'
+    networks:
+      - gangjin
+    depends_on:
+      - elasticsearch
+  user:
+    build:
+      context: .
+      dockerfile: ./user/Dockerfile
+    ports:
+      - '4001:4001'
+    environment:
+      REGISTER: consulserver:8500
+      ELASTICSEARCH: elasticsearch:9200
+      DB_PASSWORD: '${DB_PASSWORD}'
+      DB_DATABASE: '${DB_DATABASE}'
+      DB_USERNAME: '${DB_USERNAME}'
+      DB_HOST: pgsql
+      DB_PORT: '${DB_PORT:-5432}'
+    networks:
+      - gangjin
+  post:
+    build:
+      context: .
+      dockerfile: ./post/Dockerfile
+    ports:
+      - 4002:4002
+    environment:
+      REGISTER: consulserver:8500
+      ELASTICSEARCH: elasticsearch:9200
+      DB_PASSWORD: '${DB_PASSWORD}'
+      DB_DATABASE: '${DB_DATABASE}'
+      DB_USERNAME: '${DB_USERNAME}'
+      DB_HOST: pgsql
+      DB_PORT: '${DB_PORT:-5432}'
+    networks:
+        - gangjin
+
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - 'gangjin-redis:/data'
+    networks:
+      - gangjin
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      retries: 3
+      timeout: 5s
+  consulserver:
+    image: progrium/consul:latest
+    hostname: consulserver
+    ports:
+      - '8300'
+      - '8400'
+      - '8500:8500'
+      - '53'
+    command: -server -ui-dir /ui -data-dir /tmp/consul --bootstrap-expect=1
+    networks:
+      - gangjin
+  security:
+    build:
+      context: .
+      dockerfile: ./security/Dockerfile
+    environment:
+      REGISTER: consulserver:8500
+      ELASTICSEARCH: elasticsearch:9200
+    networks:
+      - gangjin
+    depends_on:
+      - elasticsearch
+
+
+networks:
+  gangjin:
+    driver: bridge
+
+volumes:
+  gangjin-pgsql:
+    driver: local
+  gangjin-elasticsearch:
+    driver: local
+  gangjin-redis:
+    driver: local

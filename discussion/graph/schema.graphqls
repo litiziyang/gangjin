@@ -1,0 +1,55 @@
+scalar Time
+scalar Data
+
+directive @auth on FIELD_DEFINITION
+directive @post on FIELD_DEFINITION
+
+
+type Discussion @key(fields: "id "){
+    id:ID!
+    "用户"
+    userId:ID!
+    "文章"
+    postId:ID!
+    "回复"
+    discussionId:ID
+    "内容"
+    content:String!
+    "热度"
+    hot :Int
+    "派系"
+    factions:DiscussionType!
+}
+enum DiscussionType{
+    "我同意"
+    square
+    "我不同意"
+    conSide
+
+}
+type Post @key(fields: "id") @extends{
+    id:ID! @external
+    enable:Boolean!
+    discussion:Discussion
+}
+
+type User @key(fields: "id") @extends{
+    id:ID! @external
+    discussion:Discussion
+}
+
+extend type Query{
+    "查看评论"
+    lookPostDiscussion(postId:ID!):[Discussion]
+    "看自己的评论"
+    checkMyDiscussion:[Discussion]@auth
+}
+
+extend type Mutation {
+    "选择阵营"
+    choiceFactions(postId:ID!):String!@auth
+    "写或回复评论"
+    write(postId:ID!,discussionId:ID):String!@auth
+    "删除评论"
+    delete(discussionId:ID!):String!@auth
+}

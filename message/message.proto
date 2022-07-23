@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "proto/message";
+package proto;
+
+service MessageService{
+  rpc sendMessage(MessageRequest)returns(MessageResponse);
+}
+
+message MessageRequest{
+  string message = 1;
+  uint64 userId =2;
+  uint64 titleId =3;
+  uint64 messageID = 4;
+
+}
+
+message MessageResponse{
+  string err =2;
+}

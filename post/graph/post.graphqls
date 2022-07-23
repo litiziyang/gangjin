@@ -1,0 +1,43 @@
+scalar Time
+scalar Data
+
+directive @auth on FIELD_DEFINITION
+
+type Post @key(fields: "id") {
+    id: ID!
+    "标题"
+    title :String!
+    "论点"
+    argument: String!
+    "文章描述"
+    describe: String!
+    "文章热度"
+    heat: Int
+    "是否过期"
+    enable: Boolean
+    "用户"
+    userId:ID!
+
+}
+
+type User @key(fields: "id") @extends{
+    id:ID! @external
+    post:Post
+}
+
+type Discussion @key(fields: "id") @extends{
+    id:ID! @external
+
+}
+
+
+extend type Mutation {
+    "写论题"
+    write(title:String!,argument:String!,describe:String!):String! @auth
+    "删除自己的论题"
+    delete(postId:ID!):String!@auth
+    "查看自己的论题"
+    seeMyPost:[Post!]@auth
+    "查看post"
+    post(id:ID!):Post!
+}

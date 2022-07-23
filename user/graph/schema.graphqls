@@ -1,0 +1,38 @@
+scalar Time
+scalar Data
+
+directive @auth on FIELD_DEFINITION
+
+type User @key(fields: "id") {
+    id: ID!
+    "名称"
+    name: String!
+    "电话号码"
+    phone: String!
+    "头像"
+    avatar: String
+    "密码"
+    password: String
+}
+
+
+type loginResponse{
+    User:User
+    token:String!
+}
+
+extend type Query {
+    user(phone:String!):User
+
+}
+
+
+extend type Mutation{
+    "发送验证码"
+    sendCode(phone:String):String!
+    "登录"
+    login(phone:String!,password:String,code:String):loginResponse!
+    "设置密码"
+    setPassword("旧密码"oldPassword:String!,"新密码"newPassword:String!):String!@auth
+
+}

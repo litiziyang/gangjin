@@ -1,0 +1,26 @@
+syntax = "proto3";
+option go_package = "proto/token";
+
+package proto;
+
+service TokenService{
+  rpc GetSecurityUser(TokenRequest) returns(TokenResponse){}
+  rpc GetSecurityToken(TokenRequest) returns(TokenResponse){}
+}
+
+message TokenRequest{
+  TokenUser user = 1;
+  string token = 2;
+}
+message TokenUser{
+  uint64 id = 1;
+}
+
+message TokenResponse{
+  string token =1;
+  TokenUser user = 2;
+  string error = 3;
+}
+
+
+

@@ -1,0 +1,21 @@
+syntax = "proto3";
+option go_package = "proto/hot";
+
+package proto;
+
+service HotService{
+  rpc GetSecurityHot(hotRequest)returns(hotResponse){}
+}
+
+message hotRequest{
+  uint64 id =1;
+  uint64 number = 2;
+  string time=3;
+  string modelName = 4;
+
+
+}
+
+message hotResponse{
+  string error = 1;
+}

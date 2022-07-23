@@ -1,0 +1,10 @@
+federation_version: 1
+subgraphs:
+  user:
+    routing_url: http://user:4001/query
+    schema:
+      subgraph_url: http://user:4001/query
+  post:
+    routing_url: http://post:4002/query
+    schema:
+      subgraph_url: http://post:4002/query

@@ -1,0 +1,19 @@
+syntax = "proto3";
+option go_package = "proto/verify";
+
+package proto;
+
+service VerifyService {
+  rpc SendVerify(VerifyRequest) returns (VerifyResponse) {}
+  rpc CheckVerify(VerifyRequest) returns (VerifyResponse) {}
+}
+
+message VerifyRequest {
+  string phone = 1;
+  string code = 2;
+}
+
+message VerifyResponse {
+  bool check = 1;
+  string error = 2;
+}

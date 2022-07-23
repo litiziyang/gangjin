@@ -1,0 +1,11 @@
+server:
+  listen: 0.0.0.0:4000
+    cors:
+      allow_any_origin: true
+      allow_credentials: true
+      allow_headers: [ Content-Type, Authorization ]
+      methods: [ POST, OPTIONS ]
+headers:
+  all:
+      - propagate:
+        matching: .*
